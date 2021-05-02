@@ -7,6 +7,7 @@ import img3 from "./3.jpg";
 import img4 from "./4.jpg";
 import img5 from "./5.jpg";
 import img6 from "./6.jpg";
+import { randomWord } from "./words";
 
 class Hangman extends Component {
   /** by default, allow 6 guesses and use provided gallows images. */
@@ -17,8 +18,9 @@ class Hangman extends Component {
 
   constructor(props) {
     super(props);
-    this.state = { nWrong: 0, guessed: new Set(), answer: "apple" };
+    this.state = { nWrong: 0, guessed: new Set(), answer: randomWord() };
     this.handleGuess = this.handleGuess.bind(this);
+    this.restart = this.restart.bind(this);
   }
 
   /** guessedWord: show current-state of word:
@@ -55,24 +57,37 @@ class Hangman extends Component {
       </button>
     ));
   }
-
+  restart() {
+    this.setState({
+      nWrong: 0,
+      guessed: new Set(),
+      answer: randomWord()
+      })
+  }
   /** render: render game */
   render() {
-    let gameOver = this.state.nWrong >= this.props.maxWrong;
+    const gameOver = this.state.nWrong >= this.props.maxWrong;
+    const altText = `${this.state.nWrong}/ ${this.props.maxWrong} guesses`;
+    const isWinner = this.guessedWord().join("") === this.state.answer;
+    let gameState = this.generateButtons();
+
+    if (isWinner) {
+      gameState = <h2> You Win!!</h2>;
+    }
+
+    if (gameOver) {
+      gameState = <h2>You Lose!</h2>;
+    }
     return (
       <div className='Hangman'>
         <h1>Hangman</h1>
-        <img src={this.props.images[this.state.nWrong]} />
+        <img src={this.props.images[this.state.nWrong]} alt={altText} />
         <p>Guesssed Wrong: {this.state.nWrong} </p>
         <p className='Hangman-word'>
-          {!gameOver ? this.guessedWord() : this.state.answer }</p>
-        <p className='Hangman-btns'>
-          {
-            gameOver
-              ? `You Lose`
-              : this.generateButtons()  }
-         
-        </p>
+           {!gameOver ? this.guessedWord() : this.state.answer }</p>
+              <p className='Hangman-btns'>{gameState}</p>
+                            { isWinner }
+        <button id='reset' onClick={this.restart}>Restart?</button>
       </div>
     );
   }
